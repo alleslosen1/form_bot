@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.keys import Keys
 
 
 glob_page_qs = {}
@@ -46,14 +47,15 @@ def find_qs():
                     glob_page_qs[titles_text[i]]['elems'] = elems
                     continue
                 # dropdown
-                elif len(parent_qs[i].find_elements(By.XPATH, './/span[@class="vRMGwf oJeWuf" and text()="Choose"]')) != 0:
-                    chooses = parent_qs[i].find_elements(By.XPATH, './/span[@class="vRMGwf oJeWuf" and text()="Choose"]')
+                elif len(glob_driver.find_elements(By.XPATH, './/span[@class="vRMGwf oJeWuf" and text()="Choose"]')) != 0:
+                    chooses = glob_driver.find_elements(By.XPATH, './/span[@class="vRMGwf oJeWuf" and text()="Choose"]')
                     chooses[i].click()
-                    ddbox = parent_qs[i].find_elements(By.XPATH, '//div[@class="OA0qNb ncFHed QXL7Te"]')
-                    elems = ddbox[i].find_elements(By.XPATH, './/div[@class="MocG8c HZ3kWc mhLiyf OIC90c LMgvRb"]')
-                    print(len(elems))
+                    ddbox = parent_qs[i].find_element(By.XPATH, '//div[@class="OA0qNb ncFHed QXL7Te"]')
+                    elems = ddbox.find_elements(By.XPATH, './/div[@class="MocG8c HZ3kWc mhLiyf OIC90c LMgvRb"]')
                     glob_page_qs[titles_text[i]]['id'] = 'dropdown'
                     glob_page_qs[titles_text[i]]['elems'] = elems
+                    choose = ddbox.find_element(By.XPATH, './/div[@class="MocG8c HZ3kWc mhLiyf LMgvRb KKjvXb DEh1R"]')
+                    choose.click()
             
             next = find_next()
             if next.get_attribute('textContent').lower() != 'next':
@@ -73,7 +75,7 @@ def find_next():
     except Exception as e:
         print(f'Failed to find next button: {e}')
 
-        
+
 def console():
     global glob_page_qs
     for key in glob_page_qs.keys():
@@ -84,6 +86,8 @@ def console():
                 num_elems = len(glob_page_qs[key]['elems'])
                 if prob_sum == 10 and len(w) == num_elems:
                     glob_page_qs[key]['weights'] = [x / 10 for x in w]  # Divide by 10 for NumPy
+
+                    print(key + '\n------\n' + ' '.join(x.test for x in glob_page_qs[key]['elems']))
                     break
                 else:
                     print(f'Sum {prob_sum} != 10 or {len(w)} weights != {num_elems} elements')
