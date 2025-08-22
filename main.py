@@ -1,13 +1,11 @@
 from functools import reduce
 import time
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.keys import Keys
 
 
 glob_page_qs = {}
@@ -17,6 +15,7 @@ glob_chrome_options.add_experimental_option("detach", True)
 glob_driver = webdriver.Chrome(service=Service(ChromeDriverManager(driver_version="139.0.7258.128").install()), options=glob_chrome_options)
 
 def find_qs():
+    glob_driver.get(form_url)
     global glob_page_qs
     elems = None
     hasNext = True
@@ -50,12 +49,14 @@ def find_qs():
                 elif len(glob_driver.find_elements(By.XPATH, './/span[@class="vRMGwf oJeWuf" and text()="Choose"]')) != 0:
                     chooses = glob_driver.find_elements(By.XPATH, './/span[@class="vRMGwf oJeWuf" and text()="Choose"]')
                     chooses[i].click()
+                    time.sleep(0.5)
                     ddbox = parent_qs[i].find_element(By.XPATH, '//div[@class="OA0qNb ncFHed QXL7Te"]')
                     elems = ddbox.find_elements(By.XPATH, './/div[@class="MocG8c HZ3kWc mhLiyf OIC90c LMgvRb"]')
                     glob_page_qs[titles_text[i]]['id'] = 'dropdown'
                     glob_page_qs[titles_text[i]]['elems'] = elems
                     choose = ddbox.find_element(By.XPATH, './/div[@class="MocG8c HZ3kWc mhLiyf LMgvRb KKjvXb DEh1R"]')
                     choose.click()
+                    time.sleep(0.5)
             
             next = find_next()
             if next.get_attribute('textContent').lower() != 'next':
@@ -66,6 +67,9 @@ def find_qs():
 
         except Exception as e:
             print(f'Failed to find title: {e}')
+            glob_driver.quit()
+
+    glob_driver.quit()
 
 def find_next():
     try:
@@ -86,23 +90,24 @@ def console():
                 num_elems = len(glob_page_qs[key]['elems'])
                 if prob_sum == 10 and len(w) == num_elems:
                     glob_page_qs[key]['weights'] = [x / 10 for x in w]  # Divide by 10 for NumPy
-
-                    print(key + '\n------\n' + ' '.join(x.test for x in glob_page_qs[key]['elems']))
                     break
                 else:
                     print(f'Sum {prob_sum} != 10 or {len(w)} weights != {num_elems} elements')
             except ValueError:
                 print('Invalid input. Enter integers separated by spaces.')
                 continue
-    
+
+
+def fill():
     glob_driver.get(form_url)
-    glob_chrome_options.headless = False
+    for key in glob_page_qs.keys():
+        pass
+
 
 def main(form_url):
-    glob_driver.get(form_url)
     find_qs()
-    glob_driver.quit()
     console()
+    fill()
 
 
 if __name__ == '__main__':
