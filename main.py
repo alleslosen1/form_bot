@@ -1,3 +1,4 @@
+
 from functools import reduce
 import random as rand
 import time
@@ -25,14 +26,18 @@ def prompt_weights():
         weight = input(f'Enter weights for question {q_counter}: ')
         if weight == 'x':
             break
+        weight = weight.split(' ')
+        if weight[0] == 'd':
+            weight = [int(i) for i in weight[1:]]
+            weight = [bool(rand.randint(1, 100) <= i) for i in weight]
+            weights.append(weight)
         else:
             try:
-                weight = [int(i) for i in weight.split(' ')]
+                weight = [int(i) for i in weight]
                 weights.append(rand.choices(range(len(weight)), weight, k=responses))
-                q_counter += 1
             except Exception as e:
                 print(f'Error - {e}')
-        
+        q_counter += 1
     print(weights)
 
 
@@ -56,6 +61,7 @@ def find_next():
         print(f'Failed to find next button: {e}')
 
 
+
 def fill_qs():
     for iter in range(len(weights[0])):
         open()
@@ -71,8 +77,10 @@ def fill_qs():
 
                     elif len(parent_qs[i].find_elements(By.XPATH, './/div[contains(@class, "uHMk6b")]')) != 0:  # checkbox
                         elems = parent_qs[i].find_elements(By.XPATH, './/div[contains(@class, "uHMk6b")]')
-                        elems[weights[total_q_counter][iter]].click()
-
+                        for j in range(len(elems)):
+                            if weights[total_q_counter][j]:
+                                elems[j].click()
+                                
                     elif len(glob_driver.find_elements(By.XPATH, './/span[@class="vRMGwf oJeWuf" and text()="Choose"]')) != 0:  # dropdown
                         chooses = glob_driver.find_elements(By.XPATH, './/span[@class="vRMGwf oJeWuf" and text()="Choose"]')
                         chooses[i].click()
@@ -93,6 +101,7 @@ def fill_qs():
             except Exception as e:
                 print(f'Error - {e}')
                 glob_driver.quit()
+                break
         
         submit = glob_driver.find_elements(By.CSS_SELECTOR, 'span[class*=NPEfkd]')
         submit[-2].click()
@@ -100,5 +109,11 @@ def fill_qs():
         glob_driver.quit()
     
 
-    prompt_weights()
-    fill_qs()
+
+prompt_weights()
+
+
+fill_qs()
+
+
+glob_driver.quit()
